@@ -1,0 +1,155 @@
+﻿<div class="side-nav">
+    <div class="side-nav-inner">
+        <ul class="side-nav-menu scrollable">
+            <li class="nav-item ">
+                <a class="dropdown-toggle" asp-area="Admin" asp-action="Index" asp-controller="Home">
+                    <span class="icon-holder">
+                        <i class="anticon anticon-dashboard"></i>
+                    </span>
+                    <span class="title">Trang Chủ</span>
+                    <span class="arrow">
+                        <i class="arrow-icon"></i>
+                    </span>
+                </a>
+            </li>  <!-- Dashboard -->
+            <li class="nav-item dropdown">
+                <a class="dropdown-toggle" >
+                    <span class="icon-holder">
+                        <i class="anticon anticon-appstore"></i>
+                    </span>
+                    <span class="title">Quản lí nhân viên</span>
+                    <span class="arrow">
+                        <i class="arrow-icon"></i>
+                    </span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a asp-area="Admin" asp-controller="NhanViens" asp-action="Index">Danh sách nhân viên</a>
+                    </li>
+                    <li>
+                        <a asp-area="Admin" asp-controller="LoaiNhanViens" asp-action="Index">Danh sách loại nhân viên</a>
+                    </li>
+                </ul>
+            </li>       <!-- Quản lí nhân viên -->
+            <li class="nav-item dropdown">
+                <a class="dropdown-toggle" >
+                    <span class="icon-holder">
+                        <i class="anticon anticon-build"></i>
+                    </span>
+                    <span class="title">Quản lí món</span>
+                    <span class="arrow">
+                        <i class="arrow-icon"></i>
+                    </span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a asp-area="Admin" asp-controller="Mons" asp-action="index">Danh sách mónww</a>
+                    </li>
+                    <li>
+                        <a asp-area="Admin" asp-controller="LoaiMons" asp-action="index">Danh sách loại món</a>
+                    </li>
+                    <li>
+                        <a asp-area="Admin" asp-controller="CongThucs" asp-action="index">Danh sách công thức</a>
+                    </li>
+                </ul>
+            </li>       <!-- Quản lí món -->
+            <li class="nav-item dropdown">
+                <a class="dropdown-toggle" >
+                    <span class="icon-holder">
+                        <i class="anticon anticon-hdd"></i>
+                    </span>
+                    <span class="title">Quản lí ca làm việc</span>
+                    <span class="arrow">
+                        <i class="arrow-icon"></i>
+                    </span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a asp-area="Admin" asp-controller="Calams" asp-action="Index">Danh sách ca làm việc</a>
+                    </li>
+                    
+                </ul>
+            </li>       <!-- Quản lí ca làm việc -->
+            <li class="nav-item dropdown">
+                <a class="dropdown-toggle" >
+                    <span class="icon-holder">
+                        <i class="anticon anticon-form"></i>
+                    </span>
+                    <span class="title">Thống kê doanh số</span>
+                    <span class="arrow">
+                        <i class="arrow-icon"></i>
+                    </span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a asp-area="Admin" asp-controller="ThongKe" asp-action="Index">Thống kê theo thời gian</a>
+                    </li>
+                    <li>
+                        <a asp-area="Admin" asp-controller="ThongKe" asp-action="ThongKeTheoLoaiMon">Thống kê loại món</a>
+                    </li>
+                </ul>
+            </li>       <!-- Quản lí doanh số -->
+            <li class="nav-item dropdown">
+                <a class="dropdown-toggle" >
+                    <span class="icon-holder">
+                        <i class="anticon anticon-table"></i>
+                    </span>
+                    <span class="title">Quản lí nguyên liệu</span>
+                    <span class="arrow">
+                        <i class="arrow-icon"></i>
+                    </span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a asp-area="Admin" asp-controller="NhaCungCaps" asp-action="Index">Danh sách nhà cung cấp</a>
+                    </li>
+                    <li>
+                        <a asp-area="Admin" asp-controller="NguyenLieus" asp-action="Index">Danh sách nguyên liệu</a>
+                    </li>
+                    <li>
+                        <a asp-area="Admin" asp-controller="DatHangs" asp-action="Index">Danh sách đặt hàng</a>
+                    </li>
+                </ul>
+            </li>       <!-- Quản lí nguyên liệu -->
+            <li class="nav-item dropdown">
+                <a class="dropdown-toggle" >
+                    <span class="icon-holder">
+                        <i class="anticon anticon-pie-chart"></i>
+                    </span>
+                    <span class="title">Quản lí hóa đơn</span>
+                    <span class="arrow">
+                        <i class="arrow-icon"></i>
+                    </span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a asp-area="Admin" asp-controller="HoaDons" asp-action="Index">Danh sách hóa đơn</a>
+                    </li>
+                </ul>
+            </li>       <!-- Quản lí hóa đơn -->
+        </ul>
+    </div>
+</div>
+<script>
+    // Lấy danh sách tất cả các thẻ li có class "dropdown"
+    var dropdownItems = document.querySelectorAll(".side-nav-menu .nav-item.dropdown");
+
+    // Lặp qua danh sách các thẻ li và thêm sự kiện click
+    dropdownItems.forEach(function (item) {
+        item.addEventListener("click", function () {
+            // Toggle class "open" trên thẻ li
+            item.classList.toggle("open");
+
+            // Tìm thẻ ul bên trong thẻ li và thay đổi thuộc tính "style" của nó
+            var ulElement = item.querySelector(".dropdown-menu");
+            if (ulElement.style.display === "none" || ulElement.style.display === "") {
+                ulElement.style.display = "block";
+               
+
+            } else {
+                ulElement.style.display = "none";
+            }
+        });
+    });
+</script>
+

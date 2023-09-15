@@ -1,0 +1,380 @@
+﻿@using Microsoft.AspNetCore.Http
+@using Microsoft.EntityFrameworkCore;
+@model List<PBL3.Models.Mon>
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+	if (HttpContextAccessor.HttpContext.Session.GetInt32("user") == null)
+	{
+		HttpContextAccessor.HttpContext.Response.Redirect(Url.Action("index", "Login", new { area = "" }));
+		HttpContextAccessor.HttpContext.Response.Body.Flush();
+		return;
+	}
+	TamtentoiContext _context = new TamtentoiContext();
+	var nv = _context.NhanViens.Include(n => n.LoaiNvNavigation)
+												.Where(n => n.NhanVienId == HttpContextAccessor.HttpContext.Session.GetInt32("user")).SingleOrDefault();
+
+}
+<div class="myMenu_container">
+	<div class="text-center p-3">MENU</div>
+	<div >
+		<form class="d-flex justify-content-around" asp-area="Serve" asp-controller="Home" asp-action="index" method="get">
+			<select name="cbbSortMon" class="mx-2 " id="" asp-items="@ViewBag.listLoaiMon">
+				<option value="-1">Tất cả</option>
+			</select>
+
+			<div class="Menu-Search">
+				<input type="text" id="searchBox" placeholder="Tìm kiếm..." name="search" value="@ViewBag.search">
+				<button style="scale: 1.15;border-radius: 5px;" type="submit" class="Search-btn">
+					<i class="fa-solid fa-magnifying-glass"></i>
+				</button>
+			</div>
+		</form>
+	</div>
+	<div class="myMenu">
+		@foreach (var mymmon in Model)
+		{
+			<div class="Mon">
+				<div class="add-btn">
+					<a onclick="addToCart(@mymmon.MonId, '@mymmon.TenMon', '@mymmon.Gia')"><i class="fa-regular fa-plus"></i></a>
+				</div>
+				<img src="~/images/mons/@mymmon.HinhAnh" alt="@mymmon.TenMon">
+				<p>@mymmon.TenMon</p>
+				<p>@((int)mymmon.Gia.Value)</p>
+			</div>
+		}
+	</div>
+</div>
+<div class="Receipt_Order">
+	<div class="Order-Area">
+		<div class="text-center p-3">CHI TIẾT ĐƠN HÀNG</div>
+		<div class="d-flex justify-content-around">
+
+			<select name="banId" id="banSelected" asp-items="@ViewBag.listBan">
+				
+				<option value="-1">Khách mang đi</option>
+			</select>
+			<div class="btnThanhToan">
+				<button onclick="ChuyenPhaChe()"> Thông báo pha chế</button>
+			</div>
+
+		</div>
+		<table id="main-table">
+			<thead>
+				<tr>
+					<th>Tên món</th>
+					<th>Số lượng</th>
+					<th>Đơn giá</th>
+					<th>Thành tiền</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody id="table-body"></tbody>
+			<tfoot>
+				<tr>
+					<td colspan="3" class="text-end"><strong>Tổng cộng</strong></td>
+					<td><strong id="total-price">0</strong></td>
+					<td></td>
+				</tr>
+			</tfoot>
+		</table>
+	</div>
+	<div class="Receipt-Area" id="Receipt-Area">
+		<div class="text-center">HÓA ĐƠN THANH TOÁN</div>
+		<div class="TongTien">
+			<p>Tổng tiền</p>
+			<p id="TongTien">0</p>
+		</div>
+		<div class="GiamGia d-flex justify-content-between">
+			<p>Giảm giá(%)</p>
+			<input id="GiamGia" type="number" placeholder="%" oninput="UpdateGiamGia()">
+		</div>
+		<div class="KhachCanTra">
+			<p>Khách cần trả</p>
+			<p id="TienKhachTra">0</p>
+		</div>
+		<div class="btnThanhToan">
+			<button id="payTheBill" onclick="PayTheBill()">Thanh toán</button>
+		</div>
+	</div>
+</div>
+@section Scripts{
+	<script>
+		window.addEventListener('load', function () {
+			LoadOrderDetail();
+		});
+		function ChuyenPhaChe() {
+			var select = document.getElementById('banSelected');
+			var banSelected = select.options[select.selectedIndex].value;
+
+			window.location.href = 'api/ChuyenPhaChe?banId=' + encodeURIComponent(banSelected);
+			LoadOrderDetail();
+		}
+
+		function ResetOrderDetail(){
+			var banDetails = document.getElementById('table-body');
+			banDetails.innerHTML = "";
+
+			var total_price = document.getElementById('total-price');
+			total_price.innerHTML = "0";
+
+			var TongTien = document.getElementById('TongTien');
+			TongTien.innerHTML = "0";
+
+			var TienKhachTra = document.getElementById('TienKhachTra');
+			TienKhachTra.innerHTML = "0";
+
+		}
+		function PayTheBill() {
+			var listTr = document.querySelectorAll('#table-body tr');
+			for(let tr of listTr ){
+				if(!tr.classList.contains('bg-hoan-thanh')&&!tr.classList.contains('bg-danger')){
+					alert('Chưa hoàn thành các món!');
+					return;
+				}
+			}
+			var GiamGiaBill = document.getElementById("GiamGia");
+
+			// Đặt giá trị của thẻ input là 0
+			GiamGiaBill.value = "0";
+
+			// Lấy giá trị của select box
+
+			var banId = document.getElementById("banSelected").value;
+
+			// Tạo đối tượng XMLHttpRequest
+			var xhr = new XMLHttpRequest();
+
+			// Đặt phương thức và URL cho yêu cầu
+			xhr.open("POST", "/Serve/Home/PayTheBill?banId=" + encodeURIComponent(banId) + "&nvId=" + encodeURIComponent(@nv.NhanVienId), true);
+
+			// Đặt tiêu đề Content-Type để đảm bảo rằng đối tượng được gửi dưới dạng JSON
+			xhr.setRequestHeader("Content-Type", "application/json");
+
+			// Đăng ký hàm xử lý khi yêu cầu hoàn thành
+			xhr.onload = function () {
+				if (xhr.status === 200) {
+					// Xử lý phản hồi từ server
+					console.log(xhr.responseText);
+				} else {
+					// Xử lý lỗi
+					console.log("Error: " + xhr.statusText);
+				}
+			};
+
+			// Đăng ký hàm xử lý khi yêu cầu thất bại
+			xhr.onerror = function () {
+				console.log("Error: " + xhr.statusText);
+			};
+
+			// Gửi yêu cầu POST với dữ liệu truyền vào là một đối tượng JSON
+			xhr.send();
+			ResetOrderDetail();
+		}
+
+
+		function LoadOrderDetail() {
+			var select = document.getElementById('banSelected');
+			var banSelected = select.options[select.selectedIndex].value;
+			$.ajax({
+				url: "/api/LoadOrderDetails",
+				contentType: 'application/json; charset=utf-8',
+				type: 'POST',
+				data: JSON.stringify({ banId: banSelected }),
+				dataType: 'html'
+			})
+				.done(function (result) {
+					$('#main-table').html(result);
+				})
+				.fail(function (xhr, status, error) {
+					alert(status);
+				});
+
+			$.ajax({
+				url: "/api/LoadInvoice",
+				contentType: 'application/json; charset=utf-8',
+				type: 'POST',
+				data: JSON.stringify({ banId: banSelected }),
+				dataType: 'html'
+			})
+				.done(function (result) {
+					$('#Receipt-Area').html(result);
+				})
+				.fail(function (xhr, status, error) {
+					alert(status);
+				});
+
+		}
+
+		$(document).ready(function () {
+			$("#banSelected").change(LoadOrderDetail);
+		});
+
+		let count = 0;
+		let GiamGia = document.getElementById("GiamGia");
+
+
+
+		function addToCart(id, name, price) {
+			var select = document.getElementById('banSelected');
+			var banSelected = select.options[select.selectedIndex].value;
+
+			const tableBody = document.getElementById("table-body");
+			const rows = document.querySelectorAll("#table-body tr");
+			let isNewItem = true;
+
+			// Kiểm tra xem món đã có trong bảng hay chưa
+			rows.forEach(function (row) {
+				if (row.cells[0].innerText === name ) {
+					if (!row.classList.contains('bg-hoan-thanh') && !row.classList.contains('bg-danger')){
+						const quantityInput = row.cells[1].children[0];
+						let quantity = parseInt(quantityInput.value) + 1;
+						quantityInput.value = quantity;
+						updateTotal(row, price * quantity);
+						isNewItem = false;
+
+						// Tạo request HTTP đến endpoint để thêm id vào listItem
+						fetch("/api/UpdateToCart", {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json"
+							},
+							body: JSON.stringify({ id: id, banId: banSelected })
+						})
+							.then(response => response.json())
+							.then(data => console.log("ID added to cart: ", data.id))
+							.catch(error => console.error("Error adding ID to cart: ", error));
+					}
+				}
+				
+			});
+
+			// Nếu món chưa có trong bảng thì tạo row mới
+			if (isNewItem) {
+
+				// Tạo request HTTP đến endpoint để thêm id vào listItem
+				fetch("/api/AddToCart", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify({ id: id, banId: banSelected, nvId: @nv.NhanVienId })
+				})
+					.then(response => response.json())
+					.then(data => console.log("ID added to cart: ", data.id))
+					.catch(error => console.error("Error adding ID to cart: ", error));
+
+				const row = document.createElement("tr");
+
+				const cell1 = document.createElement("td");
+				cell1.innerText = name;
+
+				const cell2 = document.createElement("td");
+				const quantityInput = document.createElement("input");
+				quantityInput.type = "number";
+				quantityInput.value = "1";
+				quantityInput.classList.add("form-control");
+				quantityInput.addEventListener("input", function () {
+					updateTotal(row, price);
+				});
+				cell2.appendChild(quantityInput);
+
+				const cell3 = document.createElement("td");
+				cell3.innerText = price;
+
+				const cell4 = document.createElement("td");
+				cell4.innerText = price;
+
+				const cell5 = document.createElement("td");
+				const deleteButton = document.createElement("button");
+				deleteButton.innerText = "Xóa";
+				deleteButton.classList.add("btn", "btn-danger");
+				deleteButton.addEventListener("click", function () {
+					DeleteItem(id);
+					row.remove();
+					updateTotal();
+				});
+
+				cell5.appendChild(deleteButton);
+
+				row.appendChild(cell1);
+				row.appendChild(cell2);
+				row.appendChild(cell3);
+				row.appendChild(cell4);
+				row.appendChild(cell5);
+
+				tableBody.appendChild(row);
+				updateTotal(row, price);
+				
+			}
+
+		}
+		function UpdateGiamGia() {
+			const giamGiaInput = document.getElementById('GiamGia');
+			const tongTien = document.getElementById('TongTien').innerText
+			//const tongTienValue = parseInt(tongTienElement.innerText);
+			const giamGiaValue = parseInt(giamGiaInput.value);
+			if (giamGiaValue <= 0 || giamGiaValue >= 100) {
+				alert("Vui lòng nhập giá trị nằm trong khoảng từ 1 đến 99");
+				giamGiaInput.value = '';
+				return;
+			}
+			document.getElementById("TienKhachTra").innerText = tongTien - giamGiaValue / 100 * tongTien;;
+		}
+
+		function deleteElement(id) {
+
+			var row = document.getElementById('id');
+			row.remove();
+			updateTotal()
+		}
+		function updateTotal(row, price) {
+			let total = 0;
+			const rows = document.querySelectorAll("#table-body tr");
+			rows.forEach(function (row) {
+				if(!row.classList.contains('bg-danger')){
+					const price = row.cells[2].innerText;
+				const quantity = row.cells[1].children[0].value;
+				row.cells[3].innerText = price * quantity;
+				total += price * quantity;
+				}
+			});
+			document.getElementById("total-price").innerText = total;
+			document.getElementById("TongTien").innerText = total;
+			document.getElementById("TienKhachTra").innerText = total - GiamGia.value / 100 * total;
+		}
+		function DeleteItem(monId) {
+			// Lấy giá trị của select box
+			var banId = document.getElementById("banSelected").value;
+
+			// Tạo đối tượng XMLHttpRequest
+			var xhr = new XMLHttpRequest();
+
+			// Đặt phương thức và URL cho yêu cầu
+			xhr.open("POST", "/Serve/Home/DeleteItem?banId=" + encodeURIComponent(banId) + "&monId=" + encodeURIComponent(monId), true);
+
+			// Đặt tiêu đề Content-Type để đảm bảo rằng đối tượng được gửi dưới dạng JSON
+			xhr.setRequestHeader("Content-Type", "application/json");
+
+			// Đăng ký hàm xử lý khi yêu cầu hoàn thành
+			xhr.onload = function () {
+				if (xhr.status === 200) {
+					// Xử lý phản hồi từ server
+					console.log(xhr.responseText);
+				} else {
+					// Xử lý lỗi
+					console.log("Error: " + xhr.statusText);
+				}
+			};
+
+			// Đăng ký hàm xử lý khi yêu cầu thất bại
+			xhr.onerror = function () {
+				console.log("Error: " + xhr.statusText);
+			};
+
+			// Gửi yêu cầu POST với dữ liệu truyền vào là một đối tượng JSON
+			xhr.send();
+		}
+
+
+	</script>
+}

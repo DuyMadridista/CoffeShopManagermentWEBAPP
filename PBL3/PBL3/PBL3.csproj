@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="wwwroot\css\phucvu.css" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNetCoreHero.ToastNotification" Version="1.1.0" />
+    <PackageReference Include="Microsoft.AspNet.Razor.Runtime" Version="4.0.0-rc1-final" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.2.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.15" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.15">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.15" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.15">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.13" />
+    <PackageReference Include="PagedList.Core.Mvc" Version="3.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Areas\Admin\Data\" />
+    <Folder Include="Areas\Admin\Models\" />
+    <Folder Include="Areas\Serve\Data\" />
+    <Folder Include="Areas\Serve\Models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Areas\Admin\Controllers\NhanViensController.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+
+</Project>
